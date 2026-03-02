@@ -3,7 +3,7 @@
 
 namespace duckdb {
 
-UCTransactionManager::UCTransactionManager(AttachedDatabase &db_p, UCCatalog &unity_catalog)
+UCTransactionManager::UCTransactionManager(AttachedDatabase &db_p, UnityCatalog &unity_catalog)
     : TransactionManager(db_p), unity_catalog(unity_catalog) {
 }
 

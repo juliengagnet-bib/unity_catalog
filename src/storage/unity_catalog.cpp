@@ -12,19 +12,19 @@
 
 namespace duckdb {
 
-UCCatalog::UCCatalog(AttachedDatabase &db_p, const string &internal_name, AttachOptions &attach_options,
-                     UCCredentials credentials, const string &default_schema, string catalog_name_p)
+UnityCatalog::UnityCatalog(AttachedDatabase &db_p, const string &internal_name, AttachOptions &attach_options,
+                           UCCredentials credentials, const string &default_schema, string catalog_name_p)
     : Catalog(db_p), internal_name(internal_name), access_mode(attach_options.access_mode),
       credentials(std::move(credentials)), catalog_name(std::move(catalog_name_p)), schemas(*this),
       default_schema(default_schema) {
 }
 
-UCCatalog::~UCCatalog() = default;
+UnityCatalog::~UnityCatalog() = default;
 
-void UCCatalog::Initialize(bool load_builtin) {
+void UnityCatalog::Initialize(bool load_builtin) {
 }
 
-optional_ptr<CatalogEntry> UCCatalog::CreateSchema(CatalogTransaction transaction, CreateSchemaInfo &info) {
+optional_ptr<CatalogEntry> UnityCatalog::CreateSchema(CatalogTransaction transaction, CreateSchemaInfo &info) {
 	if (info.on_conflict == OnCreateConflict::REPLACE_ON_CONFLICT) {
 		DropInfo try_drop;
 		try_drop.type = CatalogType::SCHEMA_ENTRY;
@@ -36,17 +36,17 @@ optional_ptr<CatalogEntry> UCCatalog::CreateSchema(CatalogTransaction transactio
 	return schemas.CreateSchema(transaction.GetContext(), info);
 }
 
-void UCCatalog::DropSchema(ClientContext &context, DropInfo &info) {
+void UnityCatalog::DropSchema(ClientContext &context, DropInfo &info) {
 	return schemas.DropEntry(context, info);
 }
 
-void UCCatalog::ScanSchemas(ClientContext &context, std::function<void(SchemaCatalogEntry &)> callback) {
+void UnityCatalog::ScanSchemas(ClientContext &context, std::function<void(SchemaCatalogEntry &)> callback) {
 	schemas.Scan(context, [&](CatalogEntry &schema) { callback(schema.Cast<UCSchemaEntry>()); });
 }
 
-optional_ptr<SchemaCatalogEntry> UCCatalog::LookupSchema(CatalogTransaction transaction,
-                                                         const EntryLookupInfo &schema_lookup,
-                                                         OnEntryNotFound if_not_found) {
+optional_ptr<SchemaCatalogEntry> UnityCatalog::LookupSchema(CatalogTransaction transaction,
+                                                            const EntryLookupInfo &schema_lookup,
+                                                            OnEntryNotFound if_not_found) {
 	if (schema_lookup.GetEntryName() == DEFAULT_SCHEMA && default_schema != DEFAULT_SCHEMA) {
 		if (default_schema.empty()) {
 			throw InvalidInputException(
@@ -63,19 +63,19 @@ optional_ptr<SchemaCatalogEntry> UCCatalog::LookupSchema(CatalogTransaction tran
 	return reinterpret_cast<SchemaCatalogEntry *>(entry.get());
 }
 
-bool UCCatalog::InMemory() {
+bool UnityCatalog::InMemory() {
 	return false;
 }
 
-string UCCatalog::GetDBPath() {
+string UnityCatalog::GetDBPath() {
 	return internal_name;
 }
 
-string UCCatalog::GetDefaultSchema() const {
+string UnityCatalog::GetDefaultSchema() const {
 	return default_schema;
 }
 
-void UCCatalog::OnDetach(ClientContext &context) {
+void UnityCatalog::OnDetach(ClientContext &context) {
 	schemas.Scan(context, [&](CatalogEntry &entry) {
 		auto &schema = entry.Cast<UCSchemaEntry>();
 		auto &tables = schema.tables;
@@ -83,7 +83,7 @@ void UCCatalog::OnDetach(ClientContext &context) {
 	});
 }
 
-DatabaseSize UCCatalog::GetDatabaseSize(ClientContext &context) {
+DatabaseSize UnityCatalog::GetDatabaseSize(ClientContext &context) {
 	if (default_schema.empty()) {
 		throw InvalidInputException("Attempting to fetch the database size - but no database was provided "
 		                            "in the connection string");
@@ -92,17 +92,17 @@ DatabaseSize UCCatalog::GetDatabaseSize(ClientContext &context) {
 	return size;
 }
 
-void UCCatalog::ClearCache() {
+void UnityCatalog::ClearCache() {
 	schemas.ClearEntries();
 }
 
-PhysicalOperator &UCCatalog::PlanCreateTableAs(ClientContext &context, PhysicalPlanGenerator &planner,
-                                               LogicalCreateTable &op, PhysicalOperator &plan) {
-	throw NotImplementedException("UCCatalog PlanCreateTableAs");
+PhysicalOperator &UnityCatalog::PlanCreateTableAs(ClientContext &context, PhysicalPlanGenerator &planner,
+                                                  LogicalCreateTable &op, PhysicalOperator &plan) {
+	throw NotImplementedException("UnityCatalog PlanCreateTableAs");
 }
 
-PhysicalOperator &UCCatalog::PlanInsert(ClientContext &context, PhysicalPlanGenerator &planner, LogicalInsert &op,
-                                        optional_ptr<PhysicalOperator> plan) {
+PhysicalOperator &UnityCatalog::PlanInsert(ClientContext &context, PhysicalPlanGenerator &planner, LogicalInsert &op,
+                                           optional_ptr<PhysicalOperator> plan) {
 	auto &table_entry = op.table.Cast<UCTableEntry>();
 	auto &table = table_entry.table;
 	// LAZY CREATE ATTACHED DB
@@ -132,23 +132,23 @@ PhysicalOperator &UCCatalog::PlanInsert(ClientContext &context, PhysicalPlanGene
 	return internal_catalog->PlanInsert(context, planner, op, plan);
 }
 
-PhysicalOperator &UCCatalog::PlanDelete(ClientContext &context, PhysicalPlanGenerator &planner, LogicalDelete &op,
-                                        PhysicalOperator &plan) {
-	throw NotImplementedException("UCCatalog PlanDelete");
+PhysicalOperator &UnityCatalog::PlanDelete(ClientContext &context, PhysicalPlanGenerator &planner, LogicalDelete &op,
+                                           PhysicalOperator &plan) {
+	throw NotImplementedException("UnityCatalog PlanDelete");
 }
 
-PhysicalOperator &UCCatalog::PlanDelete(ClientContext &context, PhysicalPlanGenerator &planner, LogicalDelete &op) {
-	throw NotImplementedException("UCCatalog PlanDelete");
+PhysicalOperator &UnityCatalog::PlanDelete(ClientContext &context, PhysicalPlanGenerator &planner, LogicalDelete &op) {
+	throw NotImplementedException("UnityCatalog PlanDelete");
 }
 
-PhysicalOperator &UCCatalog::PlanUpdate(ClientContext &context, PhysicalPlanGenerator &planner, LogicalUpdate &op,
-                                        PhysicalOperator &plan) {
-	throw NotImplementedException("UCCatalog PlanUpdate");
+PhysicalOperator &UnityCatalog::PlanUpdate(ClientContext &context, PhysicalPlanGenerator &planner, LogicalUpdate &op,
+                                           PhysicalOperator &plan) {
+	throw NotImplementedException("UnityCatalog PlanUpdate");
 }
 
-unique_ptr<LogicalOperator> UCCatalog::BindCreateIndex(Binder &binder, CreateStatement &stmt, TableCatalogEntry &table,
-                                                       unique_ptr<LogicalOperator> plan) {
-	throw NotImplementedException("UCCatalog BindCreateIndex");
+unique_ptr<LogicalOperator> UnityCatalog::BindCreateIndex(Binder &binder, CreateStatement &stmt,
+                                                          TableCatalogEntry &table, unique_ptr<LogicalOperator> plan) {
+	throw NotImplementedException("UnityCatalog BindCreateIndex");
 }
 
 } // namespace duckdb

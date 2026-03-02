@@ -12,11 +12,11 @@
 
 namespace duckdb {
 struct CreateSchemaInfo;
-class UCCatalog;
+class UnityCatalog;
 
 class UCSchemaSet {
 public:
-	explicit UCSchemaSet(UCCatalog &catalog);
+	explicit UCSchemaSet(UnityCatalog &catalog);
 
 public:
 	optional_ptr<CatalogEntry> CreateSchema(ClientContext &context, CreateSchemaInfo &info);
@@ -28,8 +28,9 @@ public:
 
 protected:
 	void LoadEntries(ClientContext &context);
+
 private:
-	UCCatalog &catalog;
+	UnityCatalog &catalog;
 	mutex entry_lock;
 	case_insensitive_map_t<unique_ptr<SchemaCatalogEntry>> schemas;
 	bool is_loaded = false;

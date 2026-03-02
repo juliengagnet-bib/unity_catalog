@@ -7,7 +7,7 @@
 
 namespace duckdb {
 
-UCSchemaSet::UCSchemaSet(UCCatalog &catalog) : catalog(catalog) {
+UCSchemaSet::UCSchemaSet(UnityCatalog &catalog) : catalog(catalog) {
 }
 
 static bool IsInternalTable(const string &catalog, const string &schema) {

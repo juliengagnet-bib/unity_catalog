@@ -20,17 +20,18 @@
 namespace duckdb {
 
 static idx_t ParseDeltaVersionFromAtClause(const BoundAtClause &at_clause) {
-    if (StringUtil::Lower(at_clause.Unit()) != "version") {
-        throw InvalidConfigurationException("Delta tables only support at_clause with unit 'version'");
-    }
-    Value version_value = at_clause.GetValue();
-    if (!version_value.DefaultTryCastAs(LogicalType::UBIGINT, false)) {
-        throw InvalidInputException("Failed to parse version number '%s' into a valid version", at_clause.GetValue().ToString().c_str());
-    }
-    return version_value.GetValue<idx_t>();
+	if (StringUtil::Lower(at_clause.Unit()) != "version") {
+		throw InvalidConfigurationException("Delta tables only support at_clause with unit 'version'");
+	}
+	Value version_value = at_clause.GetValue();
+	if (!version_value.DefaultTryCastAs(LogicalType::UBIGINT, false)) {
+		throw InvalidInputException("Failed to parse version number '%s' into a valid version",
+		                            at_clause.GetValue().ToString().c_str());
+	}
+	return version_value.GetValue<idx_t>();
 }
 
-UCTableSet::UCTableSet(UCSchemaEntry &schema) : catalog(schema.ParentCatalog().Cast<UCCatalog>()), schema(schema) {
+UCTableSet::UCTableSet(UCSchemaEntry &schema) : catalog(schema.ParentCatalog().Cast<UnityCatalog>()), schema(schema) {
 }
 
 static ColumnDefinition CreateColumnDefinition(ClientContext &context, UCAPIColumnDefinition &coldef) {
@@ -55,7 +56,8 @@ optional_ptr<CatalogEntry> TableInformation::GetVersion(ClientContext &context, 
 		auto transaction = schema.GetCatalogTransaction(context);
 		auto table_entry = schema.LookupEntry(transaction, lookup_info);
 		auto create_info = table_entry->GetInfo();
-		auto res = schema_versions.emplace(version, make_uniq<UCTableEntry>(catalog, schema, *this, create_info->Cast<CreateTableInfo>()));
+		auto res = schema_versions.emplace(
+		    version, make_uniq<UCTableEntry>(catalog, schema, *this, create_info->Cast<CreateTableInfo>()));
 		return res.first->second.get();
 	}
 	auto &entry = it->second;
@@ -83,10 +85,10 @@ void TableInformation::RefreshCredentials(ClientContext &context) {
 	input.type = "s3";
 	input.provider = "config";
 	input.options = {
-		{"key_id", table_credentials.key_id},
-		{"secret", table_credentials.secret},
-		{"session_token", table_credentials.session_token},
-		{"region", catalog.credentials.aws_region},
+	    {"key_id", table_credentials.key_id},
+	    {"secret", table_credentials.secret},
+	    {"session_token", table_credentials.session_token},
+	    {"region", catalog.credentials.aws_region},
 	};
 	input.scope = {table_data->storage_location};
 
@@ -122,7 +124,7 @@ void TableInformation::InternalAttach(ClientContext &context) {
 	AttachInfo info;
 	info.name = AttachedCatalogName();
 	info.options = {
-		{"type", Value("Delta")}, {"child_catalog_mode", Value(true)}, {"internal_table_name", Value(name)}};
+	    {"type", Value("Delta")}, {"child_catalog_mode", Value(true)}, {"internal_table_name", Value(name)}};
 	info.path = table_data->storage_location;
 	AttachOptions options(context.db->config.options);
 	options.access_mode = AccessMode::READ_WRITE;
@@ -142,7 +144,7 @@ void UCTableSet::OnDetach(ClientContext &context) {
 void UCTableSet::LoadEntries(ClientContext &context) {
 	auto &transaction = UCTransaction::Get(context, catalog);
 
-	auto &unity_catalog = catalog.Cast<UCCatalog>();
+	auto &unity_catalog = catalog.Cast<UnityCatalog>();
 	auto get_tables_result = UCAPI::GetTables(context, catalog, schema.name, unity_catalog.credentials);
 
 	for (auto &table : get_tables_result) {
@@ -161,11 +163,8 @@ void UCTableSet::LoadEntries(ClientContext &context) {
 			continue;
 		}
 
-		auto res = tables.emplace(
-			std::piecewise_construct,
-			std::forward_as_tuple(table.name),
-			std::forward_as_tuple(catalog, schema)
-		);
+		auto res = tables.emplace(std::piecewise_construct, std::forward_as_tuple(table.name),
+		                          std::forward_as_tuple(catalog, schema));
 		auto &table_info = res.first->second;
 
 		info.table = table.name;

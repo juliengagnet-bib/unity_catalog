@@ -6,7 +6,7 @@
 
 namespace duckdb {
 
-UCTransaction::UCTransaction(UCCatalog &unity_catalog, TransactionManager &manager, ClientContext &context)
+UCTransaction::UCTransaction(UnityCatalog &unity_catalog, TransactionManager &manager, ClientContext &context)
     : Transaction(manager, context), access_mode(unity_catalog.access_mode) {
 	//	connection = UCConnection::Open(unity_catalog.path);
 }

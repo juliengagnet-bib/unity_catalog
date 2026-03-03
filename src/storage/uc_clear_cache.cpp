@@ -13,7 +13,6 @@ struct ClearCacheFunctionData : public TableFunctionData {
 
 static unique_ptr<FunctionData> ClearCacheBind(ClientContext &context, TableFunctionBindInput &input,
                                                vector<LogicalType> &return_types, vector<string> &names) {
-
 	auto result = make_uniq<ClearCacheFunctionData>();
 	return_types.push_back(LogicalType::BOOLEAN);
 	names.emplace_back("Success");
@@ -28,7 +27,7 @@ static void ClearUCCaches(ClientContext &context) {
 		if (catalog.GetCatalogType() != "uc" && catalog.GetCatalogType() != "unity_catalog") {
 			continue;
 		}
-		catalog.Cast<UCCatalog>().ClearCache();
+		catalog.Cast<UnityCatalog>().ClearCache();
 	}
 }
 

@@ -45,6 +45,7 @@ public:
 
 private:
 	UCTableSet &GetCatalogSet(CatalogType type);
+
 public:
 	UCTableSet tables;
 };

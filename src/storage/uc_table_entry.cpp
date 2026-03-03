@@ -30,7 +30,8 @@ TableFunction UCTableEntry::GetScanFunction(ClientContext &context, unique_ptr<F
 	throw InternalException("UCTableEntry::GetScanFunction called without entry lookup info");
 }
 
-TableFunction UCTableEntry::GetScanFunction(ClientContext &context, unique_ptr<FunctionData> &bind_data, const EntryLookupInfo &lookup_info) {
+TableFunction UCTableEntry::GetScanFunction(ClientContext &context, unique_ptr<FunctionData> &bind_data,
+                                            const EntryLookupInfo &lookup_info) {
 	auto &table_data = table.table_data;
 	D_ASSERT(table_data);
 	if (table_data->data_source_format != "DELTA") {

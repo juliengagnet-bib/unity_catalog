@@ -32,11 +32,12 @@ public:
 	static void ClearCacheOnSetting(ClientContext &context, SetScope scope, Value &parameter);
 };
 
-class UCCatalog : public Catalog {
+class UnityCatalog : public Catalog {
 public:
-	explicit UCCatalog(AttachedDatabase &db_p, const string &internal_name, AttachOptions &attach_options,
-	                   UCCredentials credentials, const string &default_schema, string catalog_name = "unity_catalog");
-	~UCCatalog();
+	explicit UnityCatalog(AttachedDatabase &db_p, const string &internal_name, AttachOptions &attach_options,
+	                      UCCredentials credentials, const string &default_schema,
+	                      string catalog_name = "unity_catalog");
+	~UnityCatalog();
 
 	string internal_name;
 	AccessMode access_mode;

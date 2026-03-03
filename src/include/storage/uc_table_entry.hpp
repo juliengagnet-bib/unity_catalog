@@ -14,7 +14,7 @@
 
 namespace duckdb {
 
-class UCCatalog;
+class UnityCatalog;
 class TableInformation;
 
 struct UCTableInfo {
@@ -43,7 +43,8 @@ public:
 	unique_ptr<BaseStatistics> GetStatistics(ClientContext &context, column_t column_id) override;
 
 	TableFunction GetScanFunction(ClientContext &context, unique_ptr<FunctionData> &bind_data) override;
-	TableFunction GetScanFunction(ClientContext &context, unique_ptr<FunctionData> &bind_data, const EntryLookupInfo &lookup_info) override;
+	TableFunction GetScanFunction(ClientContext &context, unique_ptr<FunctionData> &bind_data,
+	                              const EntryLookupInfo &lookup_info) override;
 
 	TableStorageInfo GetStorageInfo(ClientContext &context) override;
 
@@ -52,6 +53,7 @@ public:
 
 	void BindUpdateConstraints(Binder &binder, LogicalGet &get, LogicalProjection &proj, LogicalUpdate &update,
 	                           ClientContext &context) override;
+
 public:
 	TableInformation &table;
 };

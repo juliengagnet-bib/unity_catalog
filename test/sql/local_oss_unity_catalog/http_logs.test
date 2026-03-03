@@ -1,6 +1,6 @@
-# name: test/sql/test_headers_parsed.test
+# name: test/sql/local_oss_unity_catalog/http_logs.test
 # description: This test triggers the http prefetch mechanism.
-# group: [sql]
+# group: [local_oss_unity_catalog]
 
 require parquet
 

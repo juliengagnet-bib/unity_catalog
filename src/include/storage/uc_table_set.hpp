@@ -13,22 +13,26 @@
 namespace duckdb {
 struct CreateTableInfo;
 class UCResult;
-class UCCatalog;
+class UnityCatalog;
 class UCSchemaEntry;
 
 class TableInformation {
 public:
-	TableInformation(UCCatalog &catalog, UCSchemaEntry &schema) : catalog(catalog), schema(schema) {}
+	TableInformation(UnityCatalog &catalog, UCSchemaEntry &schema) : catalog(catalog), schema(schema) {
+	}
+
 public:
 	optional_ptr<CatalogEntry> GetVersion(ClientContext &context, const EntryLookupInfo &lookup);
 	optional_ptr<Catalog> GetInternalCatalog();
 	void RefreshCredentials(ClientContext &context);
 	void InternalAttach(ClientContext &context);
 	void InternalDetach(ClientContext &context);
+
 private:
 	string AttachedCatalogName() const;
+
 public:
-	UCCatalog &catalog;
+	UnityCatalog &catalog;
 	UCSchemaEntry &schema;
 	unique_ptr<UCAPITable> table_data;
 	shared_ptr<AttachedDatabase> internal_attached_database;
@@ -63,8 +67,9 @@ protected:
 	void AlterTable(ClientContext &context, RenameColumnInfo &info);
 	void AlterTable(ClientContext &context, AddColumnInfo &info);
 	void AlterTable(ClientContext &context, RemoveColumnInfo &info);
+
 private:
-	UCCatalog &catalog;
+	UnityCatalog &catalog;
 	UCSchemaEntry &schema;
 	mutex entry_lock;
 	case_insensitive_map_t<TableInformation> tables;

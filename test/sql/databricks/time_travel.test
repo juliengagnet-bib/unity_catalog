@@ -1,4 +1,4 @@
-# name: test/sql/databricks/basic.test
+# name: test/sql/databricks/time_travel.test
 # description: test
 # group: [databricks]
 

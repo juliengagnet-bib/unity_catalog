@@ -19,7 +19,6 @@ jobs:
       GEN: ninja
       VCPKG_TOOLCHAIN_PATH: ${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
       USE_MERGED_VCPKG_MANIFEST: 1
-      UC_TEST_SERVER_RUNNING: 1
       BUILD_EXTENSION_TEST_DEPS: full
 
     steps:
@@ -64,6 +63,9 @@ jobs:
         make release
 
     - name: Test extension
+      env:
+        UC_TEST_SERVER_RUNNING: 1
+        UC_TEST_DATA: unitycatalog/etc/data
       run: |
         # confirm UC test server up
         cat unitycatalog/uc.log

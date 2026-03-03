@@ -1,0 +1,62 @@
+# name: test/sql/local_oss_unity_catalog/checkpoint.test
+# description: test CHECKPOINT forwarding through UC to attached delta catalogs
+# group: [local_oss_unity_catalog]
+
+require parquet
+
+require unity_catalog
+
+require delta
+
+require httpfs
+
+require-env UC_TEST_SERVER_RUNNING
+
+require-env UC_TEST_DATA
+
+statement ok
+CREATE SECRET (
+    TYPE UNITY_CATALOG,
+    TOKEN 'not-used',
+    ENDPOINT 'http://127.0.0.1:8080',
+    AWS_REGION 'us-east-2'
+);
+
+statement ok
+ATTACH 'unity' AS my_catalog (TYPE UNITY_CATALOG, DEFAULT_SCHEMA 'default');
+
+# query to trigger attach
+query III
+FROM my_catalog.default.marksheet;
+----
+1	nWYHawtqUw	930
+2	uvOzzthsLV	166
+3	WIAehuXWkv	170
+4	wYCSvnJKTo	709
+5	VsslXsUIDZ	993
+6	ZLsACYYTFy	813
+7	BtDDvLeBpK	52
+8	YISVtrPfGr	8
+9	PBPJHDFjjC	45
+10	qbDuUJzJMO	756
+11	EjqqWoaLJn	712
+12	jpZLMdKXpn	847
+13	acpjQXpJCp	649
+14	nOKqHhRwao	133
+15	kxUUZEUoKv	398
+
+statement ok
+CHECKPOINT my_catalog;
+
+# Confirm presence of checkpoint files, also for other not-yet-attached tables
+query II rowsort
+SELECT parse_path(file)[-3], parse_path(file)[-1] FROM glob('${UC_TEST_DATA}/**/*checkpoint*');
+----
+marksheet	00000000000000000001.checkpoint.parquet
+marksheet	_last_checkpoint
+marksheet_uniform	00000000000000000001.checkpoint.parquet
+marksheet_uniform	_last_checkpoint
+numbers	00000000000000000000.checkpoint.parquet
+numbers	_last_checkpoint
+user_countries	00000000000000000000.checkpoint.parquet
+user_countries	_last_checkpoint

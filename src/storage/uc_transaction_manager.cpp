@@ -1,5 +1,4 @@
 #include "storage/uc_transaction_manager.hpp"
-#include "storage/uc_schema_entry.hpp"
 #include "duckdb/main/attached_database.hpp"
 
 namespace duckdb {
@@ -33,10 +32,9 @@ void UCTransactionManager::RollbackTransaction(Transaction &transaction) {
 }
 
 void UCTransactionManager::Checkpoint(ClientContext &context, bool force) {
-	unity_catalog.ScanSchemas(context, [&](SchemaCatalogEntry &entry) {
-		auto &schema = entry.Cast<UCSchemaEntry>();
-		schema.tables.Checkpoint(context, force);
-	});
+	// auto &transaction = UCTransaction::Get(context, db.GetCatalog());
+	//	auto &db = transaction.GetConnection();
+	//	db.Execute("CHECKPOINT");
 }
 
 } // namespace duckdb

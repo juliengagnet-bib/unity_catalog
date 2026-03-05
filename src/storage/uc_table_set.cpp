@@ -141,25 +141,6 @@ void UCTableSet::OnDetach(ClientContext &context) {
 	}
 }
 
-void TableInformation::InternalCheckpoint(ClientContext &context, bool force) {
-	// table_data is guaranteed non-null: InternalCheckpoint is only called from
-	// UCTableSet::Checkpoint, which calls LoadEntries first.
-	D_ASSERT(table_data);
-	RefreshCredentials(context);
-	InternalAttach(context);
-	internal_attached_database->GetTransactionManager().Checkpoint(context, force);
-}
-
-void UCTableSet::Checkpoint(ClientContext &context, bool force) {
-	if (!is_loaded) {
-		LoadEntries(context);
-		is_loaded = true;
-	}
-	for (auto &entry : tables) {
-		entry.second.InternalCheckpoint(context, force);
-	}
-}
-
 void UCTableSet::LoadEntries(ClientContext &context) {
 	auto &transaction = UCTransaction::Get(context, catalog);
 

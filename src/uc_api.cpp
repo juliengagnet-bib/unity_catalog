@@ -120,7 +120,7 @@ static string GetCredentialsRequest(ClientContext &ctx, const string &url, const
 	auto &http_util = HTTPUtil::Get(*db);
 	auto params = http_util.InitializeParameters(*db, url);
 
-	string body = StringUtil::Format(R"({"table_id" : "%s", "operation" : "READ_WRITE"})", table_id);
+	string body = StringUtil::Format(R"({"table_id" : "%s", "operation" : "READ"})", table_id);
 	HTTPHeaders hdrs(*db);
 	hdrs.Insert("Content-Type", "application/json");
 	AuthenticateViaBearerToken(hdrs, token);
@@ -183,7 +183,7 @@ UCAPITableCredentials UCAPI::GetTableCredentials(ClientContext &ctx, const strin
 	UCAPITableCredentials result;
 
 	auto url = credentials.endpoint + "/api/2.1/unity-catalog/temporary-table-credentials";
-	auto api_result = GetCredentialsRequest(ctx, url, table_id, credentials.token);
+   auto api_result = GetCredentialsRequest(ctx, url, table_id, credentials.token);
 
 	// Read JSON and get root
 	duckdb_yyjson::yyjson_doc *doc = duckdb_yyjson::yyjson_read(api_result.c_str(), api_result.size(), 0);
@@ -200,6 +200,12 @@ UCAPITableCredentials UCAPI::GetTableCredentials(ClientContext &ctx, const strin
 		result.secret = TryGetStrFromObject(aws_temp_credentials, "secret_access_key");
 		result.session_token = TryGetStrFromObject(aws_temp_credentials, "session_token");
 	}
+	auto *azure_sas = yyjson_obj_get(root, "azure_user_delegation_sas");
+	if (azure_sas) {
+		result.session_token = TryGetStrFromObject(azure_sas, "sas_token");
+	}
+
+	//azure_user_delegation_sas
 
 	return result;
 }

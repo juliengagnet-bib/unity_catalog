@@ -76,22 +76,35 @@ void TableInformation::RefreshCredentials(ClientContext &context) {
 	auto &secret_manager = SecretManager::Get(context);
 	// Get Credentials from UCAPI
 	auto table_credentials = UCAPI::GetTableCredentials(context, table_data->table_id, catalog.credentials);
+	Printer::Print(StringUtil::Format("[unity_catalog patched] session_token present=%s length=%d",
+	                                 table_credentials.session_token.empty() ? "false" : "true",
+	                                 NumericCast<int32_t>(table_credentials.session_token.size())));
 
 	// Inject secret into secret manager scoped to this path
 	CreateSecretInput input;
 	input.on_conflict = OnCreateConflict::REPLACE_ON_CONFLICT;
 	input.persist_type = SecretPersistType::TEMPORARY;
 	input.name = "__internal_uc_" + table_data->table_id;
-	input.type = "s3";
+//	input.type = "s3";
 	input.provider = "config";
-	input.options = {
-	    {"key_id", table_credentials.key_id},
-	    {"secret", table_credentials.secret},
-	    {"session_token", table_credentials.session_token},
-	    {"region", catalog.credentials.aws_region},
-	};
 	input.scope = {table_data->storage_location};
-
+	if (table_data->storage_location.find("abfss://") == 0) {
+		// parse storage account name from location (abfss://catalog@account-name.dfs.windows.net/path-to-blob)
+		auto storage_name_start = table_data->storage_location.find('@') + 1;
+		auto storage_name_len = table_data->storage_location.find('.', storage_name_start) - storage_name_start;
+		string storage_name = table_data->storage_location.substr(storage_name_start, storage_name_len);
+		auto conn_str = "AccountName=" + storage_name + ";SharedAccessSignature=" + table_credentials.session_token;
+		input.type = "azure";
+		input.options = {{"connection_string", conn_str}};
+	} else {
+		input.type = "s3";
+		input.options = {
+			{"key_id", table_credentials.key_id},
+			{"secret", table_credentials.secret},
+			{"session_token", table_credentials.session_token},
+			{"region", catalog.credentials.aws_region},
+		};
+	}
 	secret_manager.CreateSecret(context, input);
 }
 

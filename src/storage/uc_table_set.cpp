@@ -76,9 +76,6 @@ void TableInformation::RefreshCredentials(ClientContext &context) {
 	auto &secret_manager = SecretManager::Get(context);
 	// Get Credentials from UCAPI
 	auto table_credentials = UCAPI::GetTableCredentials(context, table_data->table_id, catalog.credentials);
-	Printer::Print(StringUtil::Format("[unity_catalog patched] session_token present=%s length=%d",
-	                                 table_credentials.session_token.empty() ? "false" : "true",
-	                                 NumericCast<int32_t>(table_credentials.session_token.size())));
 
 	// Inject secret into secret manager scoped to this path
 	CreateSecretInput input;
